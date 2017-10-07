@@ -60,31 +60,31 @@ module.exports.run = (event, context, callback) => {
           command,
           environment: [
             {
-              key: "REPO_URL",
+              name: "REPO_URL",
               value: url
             },
             {
-              key: "REPO_NAME",
+              name: "REPO_NAME",
               value: name
             },
             {
-              key: "BUILD_COMMAND",
+              name: "BUILD_COMMAND",
               value: event.body.buildCmd || 'echo "Build cmd not specified"'
             },
             {
-              key: "PACKAGE_COMMAND",
+              name: "PACKAGE_COMMAND",
               value: event.body.packageCmd || "serverless package"
             },
             {
-              key: "ARTIFACTS_BUCKET_NAME",
+              name: "ARTIFACTS_BUCKET_NAME",
               value: `${name}-artifacts-${timestamp}`
             },
             {
-              key: "TEMPLATE_BUCKET_NAME",
+              name: "TEMPLATE_BUCKET_NAME",
               value: `${name}-template-${timestamp}`
             },
             {
-              key: "TIMESTAMP",
+              name: "TIMESTAMP",
               value: timestamp
             }
           ]
