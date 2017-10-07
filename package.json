@@ -1,0 +1,14 @@
+{
+  "name": "deploy-with-serverless",
+  "version": "0.0.1",
+  "description": "Architecture behind Deploy with Serverless button",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "serverless deploy"
+  },
+  "author": "Rafal Wilinski <rwilinski.me>",
+  "license": "MIT",
+  "devDependencies": {
+    "aws-sdk": "^2.130.0"
+  }
+}

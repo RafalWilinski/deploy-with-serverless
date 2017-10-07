@@ -1,0 +1,179 @@
+service: aws-nodejs
+
+custom:
+  queueName: serverless-projects-batch-queue
+  projectsTableName: serverless-projects-table
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  environment:
+    PROJECTS_TABLE: ${self:custom.projectsTableName}
+    JOB_QUEUE: ${self:custom.queueName}
+
+functions:
+  handler:
+    handler: src/handler.run
+    events:
+      - http:
+          path: /submit
+          method: POST
+  mailer:
+    handler: src/mailer.run
+    events:
+      - http:
+          path: /report
+          method: POST
+
+resources:
+  Resources:
+    ServerlessTemplatesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.projectsTableName}
+        AttributeDefinitions:
+          - AttributeName: url
+            AttributeType: S
+        KeySchema:
+          - AttributeName: url
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    ServerlessBatchVPC:
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: "10.0.0.0/16"
+        Tags:
+          - Key: project
+            Value: "deploy-with-serverless"
+    ServerlessBatchSubnet:
+      Type: AWS::EC2::Subnet
+      Properties:
+        CidrBlock: "10.0.0.0/24"
+        VpcId:
+          Ref: ServerlessBatchVPC
+        Tags:
+          - Key: project
+            Value: "deploy-with-serverless"
+    ServerlessBatchSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupName: ServerlessBatchSecurityGroup
+        GroupDescription: Security Group for AWS Batch for Serverless-deploy-button project
+        VpcId:
+          Ref: ServerlessBatchVPC
+        SecurityGroupEgress:
+          -
+            IpProtocol: tcp
+            FromPort: "0"
+            ToPort: "60000"
+            CidrIp: "0.0.0.0/0"
+        Tags:
+          - Key: project
+            Value: "deploy-with-serverless"
+    ServerlessBatchServiceRole: # Standard AWS Batch Role
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ServerlessBatchServiceRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - batch.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: ServerlessBatchPolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Resource: '*'
+                  Action:
+                    - ec2:DescribeAccountAttributes
+                    - ec2:DescribeInstances
+                    - ec2:DescribeSubnets
+                    - ec2:DescribeSecurityGroups
+                    - ec2:DescribeKeyPairs
+                    - ec2:DescribeImages
+                    - ec2:DescribeImageAttribute
+                    - ec2:DescribeSpotFleetInstances
+                    - ec2:DescribeSpotFleetRequests
+                    - ec2:DescribeSpotPriceHistory
+                    - ec2:RequestSpotFleet
+                    - ec2:CancelSpotFleetRequests
+                    - ec2:ModifySpotFleetRequest
+                    - ec2:TerminateInstances
+                    - autoscaling:DescribeAccountLimits
+                    - autoscaling:DescribeAutoScalingGroups
+                    - autoscaling:DescribeLaunchConfigurations
+                    - autoscaling:DescribeAutoScalingInstances
+                    - autoscaling:CreateLaunchConfiguration
+                    - autoscaling:CreateAutoScalingGroup
+                    - autoscaling:UpdateAutoScalingGroup
+                    - autoscaling:SetDesiredCapacity
+                    - autoscaling:DeleteLaunchConfiguration
+                    - autoscaling:DeleteAutoScalingGroup
+                    - autoscaling:CreateOrUpdateTags
+                    - autoscaling:SuspendProcesses
+                    - autoscaling:PutNotificationConfiguration
+                    - autoscaling:TerminateInstanceInAutoScalingGroup
+                    - ecs:DescribeClusters
+                    - ecs:DescribeContainerInstances
+                    - ecs:DescribeTaskDefinition
+                    - ecs:DescribeTasks
+                    - ecs:ListClusters
+                    - ecs:ListContainerInstances
+                    - ecs:ListTaskDefinitionFamilies
+                    - ecs:ListTaskDefinitions
+                    - ecs:ListTasks
+                    - ecs:CreateCluster
+                    - ecs:DeleteCluster
+                    - ecs:RegisterTaskDefinition
+                    - ecs:DeregisterTaskDefinition
+                    - ecs:RunTask
+                    - ecs:StartTask
+                    - ecs:StopTask
+                    - ecs:UpdateContainerAgent
+                    - ecs:DeregisterContainerInstance
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                    - logs:DescribeLogGroups
+                    - iam:GetInstanceProfile
+                    - iam:PassRole
+    ServerlessBatchComputeEnvironment:
+      Type: AWS::Batch::ComputeEnvironment
+      Properties:
+        Type: MANAGED
+        ComputeEnvironmentName: ServerlessBatchComputeEnvironment
+        ServiceRole:
+          Fn::GetAtt:
+            - ServerlessBatchServiceRole
+            - Arn
+        State: ENABLED
+        ComputeResources:
+          MinvCpus: 0
+          MaxvCpus: 2
+          DesiredvCpus: 1
+          Type: "EC2"
+          ImageId: ami-2d61a157 # AMI with Node 8 and Serverless Framework
+          InstanceRole: ecsInstanceRole
+          InstanceTypes:
+            - c4.large
+          SecurityGroupIds:
+            - ServerlessBatchSecurityGroup
+          Subnets:
+            - ServerlessBatchSubnet
+    ServerlessBatchJobQueue:
+      Type: "AWS::Batch::JobQueue"
+      Properties:
+        ComputeEnvironmentOrder:
+          - ComputeEnvironment: ServerlessBatchComputeEnvironment
+            Order: 1
+        Priority: 1
+        State: ENABLED
+        JobQueueName: ${self:custom.queueName}
+      DependsOn: ServerlessBatchComputeEnvironment
