@@ -1,10 +1,11 @@
 "use strict";
 
 const AWS = require("aws-sdk");
+const fs = require("fs");
+const path = require("path");
+
 const Batch = new AWS.Batch();
 const DynamoDB = new AWS.DynamoDB.DocumentClient();
-const S3 = new AWS.S3();
-const fs = require('fs');
 
 const createResponse = (statusCode, body, callback) => {
   callback(null, {
@@ -35,42 +36,76 @@ const checkProject = url => {
 
 module.exports.run = (event, context, callback) => {
   const timestamp = Math.round(+new Date() / 1000);
-  const url = event.body.url;
+  const url = JSON.parse(event.body).url;
   const name = extractProjectName(url);
-  const command = fs.readFileSync('./run.sh').split('\n');
+  const command = fs
+    .readFileSync(path.join(process.cwd(), "run.sh"))
+    .toString("utf8")
+    .split("\n");
 
-  checkProject(url).then(data => {
-    if (data) {
-      console.log("Project already processed...");
-      return createResponse(200, data, callback);
-    }
+  console.log(`URL: ${url}, Name: ${name}`);
 
-    Batch.submitJob({
-      jobDefinition: `${name}:${timestamp}`,
-      jobName: name,
-      jobQueue: process.env.JOB_QUEUE,
-      containerOverrides: {
-        command,
-        environment: [{
-          REPO_URL: url,
-          REPO_NAME: name,
-          BUILD_COMMAND: event.body.buildCmd || 'echo "Build cmd not specified"',
-          PACKAGE_COMMAND: event.body.packageCmd || 'serverless package'
-          ARTIFACTS_BUCKET_NAME: `${name}-artifacts-${timestamp}`,
-          TEMPLATE_BUCKET_NAME: `${name}-template-${timestamp}`,
-          TIMESTAMP: timestamp,
-        }]
+  checkProject(url)
+    .then(data => {
+      if (data) {
+        console.log("Project already processed...");
+        return createResponse(200, data, callback);
       }
-    })
-      .promise()
-      .then(data => {
-        return createResponse(200, {
-          message: "job submitted",
-          callback
-        });
+
+      Batch.submitJob({
+        jobDefinition: `${name}:${timestamp}`,
+        jobName: name,
+        jobQueue: process.env.JOB_QUEUE,
+        containerOverrides: {
+          command,
+          environment: [
+            {
+              key: "REPO_URL",
+              value: url
+            },
+            {
+              key: "REPO_NAME",
+              value: name
+            },
+            {
+              key: "BUILD_COMMAND",
+              value: event.body.buildCmd || 'echo "Build cmd not specified"'
+            },
+            {
+              key: "PACKAGE_COMMAND",
+              value: event.body.packageCmd || "serverless package"
+            },
+            {
+              key: "ARTIFACTS_BUCKET_NAME",
+              value: `${name}-artifacts-${timestamp}`
+            },
+            {
+              key: "TEMPLATE_BUCKET_NAME",
+              value: `${name}-template-${timestamp}`
+            },
+            {
+              key: "TIMESTAMP",
+              value: timestamp
+            }
+          ]
+        }
       })
-      .catch(error => {
-        return createResponse(400, error, callback);
-      });
-  });
+        .promise()
+        .then(data => {
+          console.log(data);
+
+          return createResponse(200, {
+            message: "job submitted",
+            callback
+          });
+        })
+        .catch(error => {
+          console.error(error);
+          return createResponse(400, error, callback);
+        });
+    })
+    .catch(error => {
+      console.error(error);
+      return createResponse(400, error, callback);
+    });
 };

@@ -10,6 +10,12 @@ provider:
   environment:
     PROJECTS_TABLE: ${self:custom.projectsTableName}
     JOB_QUEUE: ${self:custom.queueName}
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'dynamodb:GetItem'
+        - 'batch:SubmitJob'
+      Resource: '*'
 
 functions:
   handler:
@@ -18,12 +24,14 @@ functions:
       - http:
           path: /submit
           method: POST
+          cors: true
   mailer:
     handler: src/mailer.run
     events:
       - http:
           path: /report
           method: POST
+          cors: true
 
 resources:
   Resources:
