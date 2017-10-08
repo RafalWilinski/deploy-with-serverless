@@ -8,6 +8,7 @@ custom:
 provider:
   name: aws
   runtime: nodejs6.10
+  region: us-east-1
   environment:
     PROJECTS_TABLE: ${self:custom.projectsTableName}
     JOB_QUEUE: ${self:custom.queueName}
@@ -61,6 +62,7 @@ resources:
       Type: AWS::EC2::Subnet
       Properties:
         CidrBlock: "10.0.0.0/24"
+        MapPublicIpOnLaunch: true
         VpcId:
           Ref: ServerlessBatchVPC
         Tags:
@@ -71,6 +73,7 @@ resources:
       Properties:
         GroupName: ServerlessBatchSecurityGroup
         GroupDescription: Security Group for AWS Batch for Serverless-deploy-button project
+        # Default VPC - not specified one
         VpcId:
           Ref: ServerlessBatchVPC
         SecurityGroupEgress:
@@ -166,17 +169,17 @@ resources:
         State: ENABLED
         ComputeResources:
           MinvCpus: 0
-          MaxvCpus: 2
-          DesiredvCpus: 1
+          MaxvCpus: 4
+          DesiredvCpus: 0
           Type: "EC2"
-          ImageId: ami-8c1be5f6 # Standard Linux AMI
+          ImageId: ami-ec33cc96 # ECS Optimized AMI
           InstanceRole: ecsInstanceRole
           InstanceTypes:
             - c4.large
           SecurityGroupIds:
-            - ServerlessBatchSecurityGroup
+            - Ref: ServerlessBatchSecurityGroup
           Subnets:
-            - ServerlessBatchSubnet
+            - Ref: ServerlessBatchSubnet
     ServerlessBatchJobQueue:
       Type: "AWS::Batch::JobQueue"
       Properties:
@@ -193,7 +196,7 @@ resources:
         Type: container
         JobDefinitionName: ${self:custom.jobDefinitionName}
         ContainerProperties:
-          Memory: 2000
+          Memory: 512
           Privileged: true
           Vcpus: 1
           Image: 'node:8.6'
