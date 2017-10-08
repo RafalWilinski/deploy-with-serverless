@@ -16,11 +16,11 @@ const createResponse = (statusCode, body, callback) => {
 
 /*
 * In: https://github.com/serverless/serverless
-* Out: serverless/serverless
+* Out: serverless-serverless
 */
 const extractProjectName = url => {
   const arr = url.split("/");
-  return `${arr[3]}/${arr[4]}`;
+  return `${arr[3]}-${arr[4]}`;
 };
 
 const checkProject = url => {
@@ -41,7 +41,10 @@ module.exports.run = (event, context, callback) => {
   const command = fs
     .readFileSync(path.join(process.cwd(), "run.sh"))
     .toString("utf8")
-    .split("\n");
+    .split("\n")
+    .filter(x => x != "");
+
+  console.log(command);
 
   console.log(`URL: ${url}, Name: ${name}`);
 
@@ -85,7 +88,7 @@ module.exports.run = (event, context, callback) => {
             },
             {
               name: "TIMESTAMP",
-              value: timestamp
+              value: String(timestamp)
             }
           ]
         }
