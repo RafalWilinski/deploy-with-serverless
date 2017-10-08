@@ -10,7 +10,7 @@ const DynamoDB = new AWS.DynamoDB.DocumentClient();
 const createResponse = (statusCode, body, callback) => {
   callback(null, {
     statusCode,
-    body
+    body: JSON.stringify(body)
   });
 };
 
@@ -44,8 +44,6 @@ module.exports.run = (event, context, callback) => {
     .split("\n")
     .filter(x => x != "");
 
-  console.log(command);
-
   console.log(`URL: ${url}, Name: ${name}`);
 
   checkProject(url)
@@ -56,7 +54,7 @@ module.exports.run = (event, context, callback) => {
       }
 
       Batch.submitJob({
-        jobDefinition: `${name}:${timestamp}`,
+        jobDefinition: `${process.env.JOB_DEFINITON_NAME}`,
         jobName: name,
         jobQueue: process.env.JOB_QUEUE,
         containerOverrides: {
@@ -97,10 +95,13 @@ module.exports.run = (event, context, callback) => {
         .then(data => {
           console.log(data);
 
-          return createResponse(200, {
-            message: "job submitted",
+          return createResponse(
+            200,
+            {
+              message: "job submitted"
+            },
             callback
-          });
+          );
         })
         .catch(error => {
           console.error(error);

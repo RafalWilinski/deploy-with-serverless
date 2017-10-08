@@ -16,6 +16,9 @@ run() {
 }
 
 process() {
+  # Install Serverless Framework
+  npm install -g serverless
+
   # Clone repository and change directory
   git clone $REPO_URL
   cd $REPO_NAME

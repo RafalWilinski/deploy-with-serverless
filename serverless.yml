@@ -3,6 +3,7 @@ service: aws-nodejs
 custom:
   queueName: serverless-projects-batch-queue
   projectsTableName: serverless-projects-table
+  jobDefinitionName: serverless-batch-job-definition
 
 provider:
   name: aws
@@ -10,6 +11,7 @@ provider:
   environment:
     PROJECTS_TABLE: ${self:custom.projectsTableName}
     JOB_QUEUE: ${self:custom.queueName}
+    JOB_DEFINITON_NAME: ${self:custom.jobDefinitionName}
   iamRoleStatements:
     - Effect: 'Allow'
       Action:
@@ -167,7 +169,7 @@ resources:
           MaxvCpus: 2
           DesiredvCpus: 1
           Type: "EC2"
-          ImageId: ami-2d61a157 # AMI with Node 8 and Serverless Framework
+          ImageId: ami-8c1be5f6 # Standard Linux AMI
           InstanceRole: ecsInstanceRole
           InstanceTypes:
             - c4.large
@@ -185,3 +187,16 @@ resources:
         State: ENABLED
         JobQueueName: ${self:custom.queueName}
       DependsOn: ServerlessBatchComputeEnvironment
+    ServerlessBatchJobDefinition:
+      Type: 'AWS::Batch::JobDefinition'
+      Properties:
+        Type: container
+        JobDefinitionName: ${self:custom.jobDefinitionName}
+        ContainerProperties:
+          Memory: 2000
+          Privileged: true
+          Vcpus: 1
+          Image: 'node:8.6'
+        RetryStrategy:
+          Attempts: 1
+
