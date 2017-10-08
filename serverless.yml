@@ -55,9 +55,54 @@ resources:
       Type: AWS::EC2::VPC
       Properties:
         CidrBlock: "10.0.0.0/16"
+        EnableDnsSupport: true
+        EnableDnsHostnames: true
         Tags:
           - Key: project
             Value: "deploy-with-serverless"
+    ServerlessBatchInternetGateway:
+      Type: AWS::EC2::InternetGateway
+      Properties:
+        Tags:
+          - Key: project
+            Value: "deploy-with-serverless"
+    ServerlessBatchVPCIPGWAttachment:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Properties:
+        InternetGatewayId:
+          Ref: ServerlessBatchInternetGateway
+        VpcId:
+          Ref: ServerlessBatchVPC
+      DependsOn:
+        - ServerlessBatchInternetGateway
+        - ServerlessBatchVPC
+    ServerlessBatchRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId:
+          Ref: ServerlessBatchVPC
+        Tags:
+          - Key: project
+            Value: "deploy-with-serverless"
+    ServerlessBatchInternetRoute:
+      Type: AWS::EC2::Route
+      Properties:
+        DestinationCidrBlock: 0.0.0.0/0
+        GatewayId:
+          Ref: ServerlessBatchInternetGateway
+        RouteTableId:
+          Ref: ServerlessBatchRouteTable
+      DependsOn: ServerlessBatchInternetGateway
+    # ServerlessBatchSubnetRouteTableAssociation:
+    #   Type: AWS::EC2::SubnetRouteTableAssociation
+    #   Properties:
+    #     RouteTableId:
+    #       Ref: ServerlessBatchRouteTable
+    #     SubnetId:
+    #       Ref: ServerlessBatchSubnet
+    #   DependsOn:
+    #     - ServerlessBatchRouteTable
+    #     - ServerlessBatchSubnet
     ServerlessBatchSubnet:
       Type: AWS::EC2::Subnet
       Properties:
@@ -73,7 +118,6 @@ resources:
       Properties:
         GroupName: ServerlessBatchSecurityGroup
         GroupDescription: Security Group for AWS Batch for Serverless-deploy-button project
-        # Default VPC - not specified one
         VpcId:
           Ref: ServerlessBatchVPC
         SecurityGroupEgress:
@@ -175,7 +219,9 @@ resources:
           ImageId: ami-ec33cc96 # ECS Optimized AMI
           InstanceRole: ecsInstanceRole
           InstanceTypes:
+            - m3.medium
             - c4.large
+            - optimal
           SecurityGroupIds:
             - Ref: ServerlessBatchSecurityGroup
           Subnets:
