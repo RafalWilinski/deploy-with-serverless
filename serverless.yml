@@ -4,6 +4,7 @@ custom:
   queueName: serverless-projects-batch-queue
   projectsTableName: serverless-projects-table
   jobDefinitionName: serverless-batch-job-definition
+  keyPair: RafalWilinski-personal-ssh-key
 
 provider:
   name: aws
@@ -93,16 +94,6 @@ resources:
         RouteTableId:
           Ref: ServerlessBatchRouteTable
       DependsOn: ServerlessBatchInternetGateway
-    # ServerlessBatchSubnetRouteTableAssociation:
-    #   Type: AWS::EC2::SubnetRouteTableAssociation
-    #   Properties:
-    #     RouteTableId:
-    #       Ref: ServerlessBatchRouteTable
-    #     SubnetId:
-    #       Ref: ServerlessBatchSubnet
-    #   DependsOn:
-    #     - ServerlessBatchRouteTable
-    #     - ServerlessBatchSubnet
     ServerlessBatchSubnet:
       Type: AWS::EC2::Subnet
       Properties:
@@ -125,6 +116,12 @@ resources:
             IpProtocol: tcp
             FromPort: "0"
             ToPort: "60000"
+            CidrIp: "0.0.0.0/0"
+        SecurityGroupIngress:
+          -
+            IpProtocol: tcp
+            FromPort: "22"
+            ToPort: "22"
             CidrIp: "0.0.0.0/0"
         Tags:
           - Key: project
@@ -215,6 +212,7 @@ resources:
           MinvCpus: 0
           MaxvCpus: 4
           DesiredvCpus: 0
+          Ec2KeyPair: ${self:custom.keyPair}
           Type: "EC2"
           ImageId: ami-ec33cc96 # ECS Optimized AMI
           InstanceRole: ecsInstanceRole
