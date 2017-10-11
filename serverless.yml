@@ -85,6 +85,13 @@ resources:
         Tags:
           - Key: project
             Value: "deploy-with-serverless"
+    ServerlessBatchSubnetRouteTableAssoc:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId:
+          Ref: ServerlessBatchRouteTable
+        SubnetId:
+          Ref: ServerlessBatchSubnet
     ServerlessBatchInternetRoute:
       Type: AWS::EC2::Route
       Properties:
@@ -218,8 +225,6 @@ resources:
           InstanceRole: ecsInstanceRole
           InstanceTypes:
             - m3.medium
-            - c4.large
-            - optimal
           SecurityGroupIds:
             - Ref: ServerlessBatchSecurityGroup
           Subnets:

@@ -4,7 +4,8 @@
   "description": "Architecture behind Deploy with Serverless button",
   "main": "index.js",
   "scripts": {
-    "deploy": "serverless deploy"
+    "deploy": "serverless deploy",
+    "publish-dockerfile": "docker build ."
   },
   "author": "Rafal Wilinski <rwilinski.me>",
   "license": "MIT",
