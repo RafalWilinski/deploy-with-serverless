@@ -39,6 +39,8 @@ functions:
 
 resources:
   Resources:
+
+    # DynamoDB
     ServerlessTemplatesTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -52,6 +54,8 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+
+    # Networking
     ServerlessBatchVPC:
       Type: AWS::EC2::VPC
       Properties:
@@ -133,6 +137,36 @@ resources:
         Tags:
           - Key: project
             Value: "deploy-with-serverless"
+
+    # ECR Repository
+    ServerlessBatchRepository:
+      Type: AWS::ECR::Repository
+      Properties:
+        RepositoryName: "ServerlessBatchRepository"
+        RepositoryPolicyText: 
+          Version: "2012-10-17"
+          Statement: 
+            - 
+              Sid: AllowPushPull
+              Effect: Allow
+              Principal: 
+                AWS: 
+                  - 'Fn::Join':
+                    - ':'
+                    -
+                      - "arn:aws:iam:"
+                      - Ref: 'AWS::AccountId'
+                      - "user/*"
+              Action: 
+                - "ecr:GetDownloadUrlForLayer"
+                - "ecr:BatchGetImage"
+                - "ecr:BatchCheckLayerAvailability"
+                - "ecr:PutImage"
+                - "ecr:InitiateLayerUpload"
+                - "ecr:UploadLayerPart"
+                - "ecr:CompleteLayerUpload"
+    
+    # IAM
     ServerlessBatchServiceRole: # Standard AWS Batch Role
       Type: AWS::IAM::Role
       Properties:
@@ -205,6 +239,8 @@ resources:
                     - logs:DescribeLogGroups
                     - iam:GetInstanceProfile
                     - iam:PassRole
+
+    # AWS Batch
     ServerlessBatchComputeEnvironment:
       Type: AWS::Batch::ComputeEnvironment
       Properties:
