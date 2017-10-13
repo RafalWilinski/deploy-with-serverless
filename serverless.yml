@@ -178,6 +178,18 @@ resources:
         LoginProfile:
           Password: ${file(./password.yml):password}
         UserName: ServerlessBatchUser
+    ServerlessBatchUserPolicy:
+      Type: AWS::IAM::Policy
+      Properties:
+        PolicyName: ServerlessBatchUserPolicy
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Effect: "Allow"
+              Action:
+                - ecr:GetAuthorizationToken
+              Resource: "*"
     ServerlessBatchUserKeys:
       Type: AWS::IAM::AccessKey
       Properties:
