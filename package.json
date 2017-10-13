@@ -5,11 +5,13 @@
   "main": "index.js",
   "scripts": {
     "deploy": "serverless deploy",
-    "publish-dockerfile": "docker build ."
+    "build": "docker build .",
+    "gen-passwd": "./scripts/gen-passwd.sh"
   },
   "author": "Rafal Wilinski <rwilinski.me>",
   "license": "MIT",
   "devDependencies": {
-    "aws-sdk": "^2.130.0"
+    "aws-sdk": "^2.130.0",
+    "serverless-stack-output": "^0.2.0"
   }
 }

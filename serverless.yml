@@ -1,10 +1,17 @@
 service: aws-nodejs
 
+plugins:
+  - serverless-stack-output
+
 custom:
   queueName: serverless-projects-batch-queue
   projectsTableName: serverless-projects-table
   jobDefinitionName: serverless-batch-job-definition
   keyPair: RafalWilinski-personal-ssh-key
+
+  output:
+    handler: scripts/deploy-proxy.handler
+    file: user-data.json
 
 provider:
   name: aws
@@ -23,14 +30,14 @@ provider:
 
 functions:
   handler:
-    handler: src/handler.run
+    handler: functions/handler.run
     events:
       - http:
           path: /submit
           method: POST
           cors: true
   mailer:
-    handler: src/mailer.run
+    handler: functions/mailer.run
     events:
       - http:
           path: /report
@@ -142,7 +149,7 @@ resources:
     ServerlessBatchRepository:
       Type: AWS::ECR::Repository
       Properties:
-        RepositoryName: "ServerlessBatchRepository"
+        RepositoryName: "serverless-batch-repository"
         RepositoryPolicyText: 
           Version: "2012-10-17"
           Statement: 
@@ -151,12 +158,9 @@ resources:
               Effect: Allow
               Principal: 
                 AWS: 
-                  - 'Fn::Join':
-                    - ':'
-                    -
-                      - "arn:aws:iam:"
-                      - Ref: 'AWS::AccountId'
-                      - "user/*"
+                  - 'Fn::GetAtt':
+                    - ServerlessBatchUser
+                    - Arn
               Action: 
                 - "ecr:GetDownloadUrlForLayer"
                 - "ecr:BatchGetImage"
@@ -165,8 +169,20 @@ resources:
                 - "ecr:InitiateLayerUpload"
                 - "ecr:UploadLayerPart"
                 - "ecr:CompleteLayerUpload"
+      DependsOn: ServerlessBatchUser
     
     # IAM
+    ServerlessBatchUser:
+      Type: AWS::IAM::User
+      Properties:
+        LoginProfile:
+          Password: ${file(./password.yml):password}
+        UserName: ServerlessBatchUser
+    ServerlessBatchUserKeys:
+      Type: AWS::IAM::AccessKey
+      Properties:
+        UserName: ServerlessBatchUser
+      DependsOn: ServerlessBatchUser
     ServerlessBatchServiceRole: # Standard AWS Batch Role
       Type: AWS::IAM::Role
       Properties:
@@ -287,4 +303,16 @@ resources:
           Image: 'node:8.6'
         RetryStrategy:
           Attempts: 1
+  Outputs:
+    accessKey:
+      Description: Access Key
+      Value:
+        Ref: ServerlessBatchUserKeys
+    secretKey:
+      Description: Secret Key
+      Value:
+        Fn::GetAtt:
+          - ServerlessBatchUserKeys
+          - SecretAccessKey
+      
 
