@@ -10,7 +10,7 @@ Infrastructure for processing Serverless projects and creating one-click deploym
 
 
 ## Development
-## Prerequisites
+### Prerequisites
  - Node
  - AWS Account & Credentials Set
  - Serverless Framework
