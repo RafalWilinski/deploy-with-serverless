@@ -16,5 +16,5 @@ RUN echo "export PATH=~/.local/bin:$PATH" > ~/.bashrc
 RUN ["npm", "install", "-g", "serverless"]
 
 COPY ./run.sh /
-COPY ./change-deplomeny-bucket.py /
+COPY ./change-deployment-bucket.py /
 ENTRYPOINT [ "/run.sh" ]

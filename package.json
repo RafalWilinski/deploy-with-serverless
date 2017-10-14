@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "deploy": "serverless deploy",
-    "build": "docker build .",
     "gen-passwd": "./scripts/gen-passwd.sh",
     "deploy-img": "aws s3 cp ./assets/button.png s3://deploy-with-serverless"
   },

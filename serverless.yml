@@ -36,12 +36,21 @@ functions:
           path: /submit
           method: POST
           cors: true
-  mailer:
-    handler: functions/mailer.run
+  image-proxy:
+    handler: functions/image-proxy.run
+    memory: 128
     events:
       - http:
-          path: /report
-          method: POST
+          path: /image
+          method: GET
+          cors: true
+  href:
+    handler: functions/href.run
+    memory: 128
+    events:
+      - http:
+          path: /template
+          method: GET
           cors: true
 
 resources:
