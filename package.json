@@ -6,7 +6,7 @@
   "scripts": {
     "deploy": "serverless deploy",
     "gen-passwd": "./scripts/gen-passwd.sh",
-    "deploy-img": "aws s3 cp ./assets/button.png s3://deploy-with-serverless --acl public-read"
+    "deploy-img": "aws s3 cp ./assets/button.svg s3://deploy-with-serverless --acl public-read"
   },
   "author": "Rafal Wilinski <rwilinski.me>",
   "license": "MIT",

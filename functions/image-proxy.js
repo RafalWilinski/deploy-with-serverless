@@ -8,7 +8,7 @@ module.exports.run = (event, context, callback) => {
   callback(null, {
     statusCode: 301,
     headers: {
-      Location: 'https://s3.amazonaws.com/deploy-with-serverless/button.png'
+      Location: 'https://s3.amazonaws.com/deploy-with-serverless/button.svg'
     },
     body: '',
   });
