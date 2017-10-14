@@ -47,6 +47,13 @@ functions:
 resources:
   Resources:
 
+    # S3
+    DeployWithServerlessBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: deploy-with-serverless
+        AccessControl: PublicRead
+
     # DynamoDB
     ServerlessTemplatesTable:
       Type: AWS::DynamoDB::Table

@@ -1,0 +1,315 @@
+custom:
+  jobDefinitionName: serverless-batch-job-definition
+  keyPair: RafalWilinski-personal-ssh-key
+  output:
+    file: user-data.json
+    handler: scripts/deploy-proxy.handler
+  projectsTableName: serverless-projects-table
+  queueName: serverless-projects-batch-queue
+functions:
+  handler:
+    events:
+    - http:
+        cors: true
+        method: POST
+        path: /submit
+    handler: functions/handler.run
+  mailer:
+    events:
+    - http:
+        cors: true
+        method: POST
+        path: /report
+    handler: functions/mailer.run
+plugins:
+- serverless-stack-output
+provider:
+  deploymentBucket:
+    name: com.deploy-with-serverless.aws-nodejs
+  environment:
+    JOB_DEFINITON_NAME: ${self:custom.jobDefinitionName}
+    JOB_QUEUE: ${self:custom.queueName}
+    PROJECTS_TABLE: ${self:custom.projectsTableName}
+  iamRoleStatements:
+  - Action:
+    - dynamodb:GetItem
+    - batch:SubmitJob
+    Effect: Allow
+    Resource: '*'
+  name: aws
+  region: us-east-1
+  runtime: nodejs6.10
+resources:
+  Outputs:
+    accessKey:
+      Description: Access Key
+      Value:
+        Ref: ServerlessBatchUserKeys
+    secretKey:
+      Description: Secret Key
+      Value:
+        Fn::GetAtt:
+        - ServerlessBatchUserKeys
+        - SecretAccessKey
+  Resources:
+    ServerlessBatchComputeEnvironment:
+      Properties:
+        ComputeEnvironmentName: ServerlessBatchComputeEnvironment
+        ComputeResources:
+          DesiredvCpus: 0
+          Ec2KeyPair: ${self:custom.keyPair}
+          ImageId: ami-ec33cc96
+          InstanceRole: ecsInstanceRole
+          InstanceTypes:
+          - m3.medium
+          MaxvCpus: 4
+          MinvCpus: 0
+          SecurityGroupIds:
+          - Ref: ServerlessBatchSecurityGroup
+          Subnets:
+          - Ref: ServerlessBatchSubnet
+          Type: EC2
+        ServiceRole:
+          Fn::GetAtt:
+          - ServerlessBatchServiceRole
+          - Arn
+        State: ENABLED
+        Type: MANAGED
+      Type: AWS::Batch::ComputeEnvironment
+    ServerlessBatchInternetGateway:
+      Properties:
+        Tags:
+        - Key: project
+          Value: deploy-with-serverless
+      Type: AWS::EC2::InternetGateway
+    ServerlessBatchInternetRoute:
+      DependsOn: ServerlessBatchInternetGateway
+      Properties:
+        DestinationCidrBlock: 0.0.0.0/0
+        GatewayId:
+          Ref: ServerlessBatchInternetGateway
+        RouteTableId:
+          Ref: ServerlessBatchRouteTable
+      Type: AWS::EC2::Route
+    ServerlessBatchJobDefinition:
+      Properties:
+        ContainerProperties:
+          Image: serverless-batch:latest
+          Memory: 512
+          Privileged: true
+          Vcpus: 1
+        JobDefinitionName: ${self:custom.jobDefinitionName}
+        RetryStrategy:
+          Attempts: 1
+        Type: container
+      Type: AWS::Batch::JobDefinition
+    ServerlessBatchJobQueue:
+      DependsOn: ServerlessBatchComputeEnvironment
+      Properties:
+        ComputeEnvironmentOrder:
+        - ComputeEnvironment: ServerlessBatchComputeEnvironment
+          Order: 1
+        JobQueueName: ${self:custom.queueName}
+        Priority: 1
+        State: ENABLED
+      Type: AWS::Batch::JobQueue
+    ServerlessBatchRepository:
+      DependsOn: ServerlessBatchUser
+      Properties:
+        RepositoryName: serverless-batch-repository
+        RepositoryPolicyText:
+          Statement:
+          - Action:
+            - ecr:GetDownloadUrlForLayer
+            - ecr:BatchGetImage
+            - ecr:BatchCheckLayerAvailability
+            - ecr:PutImage
+            - ecr:InitiateLayerUpload
+            - ecr:UploadLayerPart
+            - ecr:CompleteLayerUpload
+            Effect: Allow
+            Principal:
+              AWS:
+              - Fn::GetAtt:
+                - ServerlessBatchUser
+                - Arn
+            Sid: AllowPushPull
+          Version: '2012-10-17'
+      Type: AWS::ECR::Repository
+    ServerlessBatchRouteTable:
+      Properties:
+        Tags:
+        - Key: project
+          Value: deploy-with-serverless
+        VpcId:
+          Ref: ServerlessBatchVPC
+      Type: AWS::EC2::RouteTable
+    ServerlessBatchSecurityGroup:
+      Properties:
+        GroupDescription: Security Group for AWS Batch for Serverless-deploy-button
+          project
+        GroupName: ServerlessBatchSecurityGroup
+        SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: '0'
+          IpProtocol: tcp
+          ToPort: '60000'
+        SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: '22'
+          IpProtocol: tcp
+          ToPort: '22'
+        Tags:
+        - Key: project
+          Value: deploy-with-serverless
+        VpcId:
+          Ref: ServerlessBatchVPC
+      Type: AWS::EC2::SecurityGroup
+    ServerlessBatchServiceRole:
+      Properties:
+        AssumeRolePolicyDocument:
+          Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+              - batch.amazonaws.com
+          Version: '2012-10-17'
+        Policies:
+        - PolicyDocument:
+            Statement:
+            - Action:
+              - ec2:DescribeAccountAttributes
+              - ec2:DescribeInstances
+              - ec2:DescribeSubnets
+              - ec2:DescribeSecurityGroups
+              - ec2:DescribeKeyPairs
+              - ec2:DescribeImages
+              - ec2:DescribeImageAttribute
+              - ec2:DescribeSpotFleetInstances
+              - ec2:DescribeSpotFleetRequests
+              - ec2:DescribeSpotPriceHistory
+              - ec2:RequestSpotFleet
+              - ec2:CancelSpotFleetRequests
+              - ec2:ModifySpotFleetRequest
+              - ec2:TerminateInstances
+              - autoscaling:DescribeAccountLimits
+              - autoscaling:DescribeAutoScalingGroups
+              - autoscaling:DescribeLaunchConfigurations
+              - autoscaling:DescribeAutoScalingInstances
+              - autoscaling:CreateLaunchConfiguration
+              - autoscaling:CreateAutoScalingGroup
+              - autoscaling:UpdateAutoScalingGroup
+              - autoscaling:SetDesiredCapacity
+              - autoscaling:DeleteLaunchConfiguration
+              - autoscaling:DeleteAutoScalingGroup
+              - autoscaling:CreateOrUpdateTags
+              - autoscaling:SuspendProcesses
+              - autoscaling:PutNotificationConfiguration
+              - autoscaling:TerminateInstanceInAutoScalingGroup
+              - ecs:DescribeClusters
+              - ecs:DescribeContainerInstances
+              - ecs:DescribeTaskDefinition
+              - ecs:DescribeTasks
+              - ecs:ListClusters
+              - ecs:ListContainerInstances
+              - ecs:ListTaskDefinitionFamilies
+              - ecs:ListTaskDefinitions
+              - ecs:ListTasks
+              - ecs:CreateCluster
+              - ecs:DeleteCluster
+              - ecs:RegisterTaskDefinition
+              - ecs:DeregisterTaskDefinition
+              - ecs:RunTask
+              - ecs:StartTask
+              - ecs:StopTask
+              - ecs:UpdateContainerAgent
+              - ecs:DeregisterContainerInstance
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:DescribeLogGroups
+              - iam:GetInstanceProfile
+              - iam:PassRole
+              Effect: Allow
+              Resource: '*'
+            Version: '2012-10-17'
+          PolicyName: ServerlessBatchPolicy
+        RoleName: ServerlessBatchServiceRole
+      Type: AWS::IAM::Role
+    ServerlessBatchSubnet:
+      Properties:
+        CidrBlock: 10.0.0.0/24
+        MapPublicIpOnLaunch: true
+        Tags:
+        - Key: project
+          Value: deploy-with-serverless
+        VpcId:
+          Ref: ServerlessBatchVPC
+      Type: AWS::EC2::Subnet
+    ServerlessBatchSubnetRouteTableAssoc:
+      Properties:
+        RouteTableId:
+          Ref: ServerlessBatchRouteTable
+        SubnetId:
+          Ref: ServerlessBatchSubnet
+      Type: AWS::EC2::SubnetRouteTableAssociation
+    ServerlessBatchUser:
+      Properties:
+        LoginProfile:
+          Password: ${file(./password.yml):password}
+        UserName: ServerlessBatchUser
+      Type: AWS::IAM::User
+    ServerlessBatchUserKeys:
+      DependsOn: ServerlessBatchUser
+      Properties:
+        UserName: ServerlessBatchUser
+      Type: AWS::IAM::AccessKey
+    ServerlessBatchUserPolicy:
+      DependsOn: ServerlessBatchUser
+      Properties:
+        PolicyDocument:
+          Statement:
+          - Action:
+            - ecr:GetAuthorizationToken
+            - ecr:InitiateLayerUpload
+            Effect: Allow
+            Resource: '*'
+          Version: '2012-10-17'
+        PolicyName: ServerlessBatchUserPolicy
+        Users:
+        - Ref: ServerlessBatchUser
+      Type: AWS::IAM::Policy
+    ServerlessBatchVPC:
+      Properties:
+        CidrBlock: 10.0.0.0/16
+        EnableDnsHostnames: true
+        EnableDnsSupport: true
+        Tags:
+        - Key: project
+          Value: deploy-with-serverless
+      Type: AWS::EC2::VPC
+    ServerlessBatchVPCIPGWAttachment:
+      DependsOn:
+      - ServerlessBatchInternetGateway
+      - ServerlessBatchVPC
+      Properties:
+        InternetGatewayId:
+          Ref: ServerlessBatchInternetGateway
+        VpcId:
+          Ref: ServerlessBatchVPC
+      Type: AWS::EC2::VPCGatewayAttachment
+    ServerlessTemplatesTable:
+      Properties:
+        AttributeDefinitions:
+        - AttributeName: url
+          AttributeType: S
+        KeySchema:
+        - AttributeName: url
+          KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:custom.projectsTableName}
+      Type: AWS::DynamoDB::Table
+service: aws-nodejs

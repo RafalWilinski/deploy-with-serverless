@@ -8,11 +8,13 @@ RUN apt-get install -y \
   man \
   python \
   python-pip \
-  python-dev
+  python-dev \
+  python-yaml
 
 RUN pip install awscli
 RUN echo "export PATH=~/.local/bin:$PATH" > ~/.bashrc
 RUN ["npm", "install", "-g", "serverless"]
 
 COPY ./run.sh /
+COPY ./change-deplomeny-bucket.py /
 ENTRYPOINT [ "/run.sh" ]
