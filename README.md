@@ -19,6 +19,8 @@ In `README.md`, add following button/image:
 [![](https://kojv1kg009.execute-api.us-east-1.amazonaws.com/dev/image?url=<YOUR_PROJECT_GITHUB_URL>)](https://kojv1kg009.execute-api.us-east-1.amazonaws.com/dev/template?url=<YOUR_PROJECT_GITHUB_URL>)
 ```
 
+All the magic like building project, uploading artifacts or creating CloudFormation template would be handled automatically!
+
 ## Development
 ### Prerequisites
  - Node
