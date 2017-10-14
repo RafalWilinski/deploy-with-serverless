@@ -189,7 +189,11 @@ resources:
               Effect: "Allow"
               Action:
                 - ecr:GetAuthorizationToken
+                - ecr:InitiateLayerUpload
               Resource: "*"
+        Users:
+          - Ref: ServerlessBatchUser
+      DependsOn: ServerlessBatchUser
     ServerlessBatchUserKeys:
       Type: AWS::IAM::AccessKey
       Properties:
@@ -327,4 +331,3 @@ resources:
           - ServerlessBatchUserKeys
           - SecretAccessKey
       
-

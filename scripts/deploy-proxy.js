@@ -10,7 +10,7 @@ const handler = (data) => {
     const deploy = spawn('/bin/sh', ['./scripts/push-image.sh', data.accessKey, data.secretKey, payload.Account, 'us-east-1']);
 
     deploy.stdout.on('data', (data) => console.log(data.toString()));
-    deploy.stderr.on('data', (data) => console.log(data.toString()));
+    deploy.stderr.on('data', (data) => console.error(data.toString()));
     deploy.on('close', (code) => console.log(`Process exited: ${code}`));
   }).catch(console.error);
 }
