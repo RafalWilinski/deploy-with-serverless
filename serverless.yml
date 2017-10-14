@@ -316,7 +316,7 @@ resources:
           Memory: 512
           Privileged: true
           Vcpus: 1
-          Image: 'node:8.6'
+          Image: 'serverless-batch:latest'
         RetryStrategy:
           Attempts: 1
   Outputs:

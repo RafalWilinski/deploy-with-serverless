@@ -38,11 +38,6 @@ module.exports.run = (event, context, callback) => {
   const timestamp = Math.round(+new Date() / 1000);
   const url = JSON.parse(event.body).url;
   const name = extractProjectName(url);
-  const command = fs
-    .readFileSync(path.join(process.cwd(), "run.sh"))
-    .toString("utf8")
-    .split("\n")
-    .filter(x => x != "");
 
   console.log(`URL: ${url}, Name: ${name}`);
 
@@ -58,7 +53,6 @@ module.exports.run = (event, context, callback) => {
         jobName: name,
         jobQueue: process.env.JOB_QUEUE,
         containerOverrides: {
-          command,
           environment: [
             {
               name: "REPO_URL",
