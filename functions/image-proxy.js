@@ -7,7 +7,6 @@ const extractProjectName = require('./utils/extractProjectName');
 const Lambda = new AWS.Lambda();
 
 const returnReady = (callback) => response.redirect('https://s3.amazonaws.com/deploy-with-serverless/button-ready.svg', callback);
-const returnInProgress = (callback) => response.redirect('https://s3.amazonaws.com/deploy-with-serverless/button-in-progress.svg', callback);
 
 module.exports.run = (event, context, callback) => {
   // TODO: Check if built project is up to date
@@ -24,24 +23,24 @@ module.exports.run = (event, context, callback) => {
           inProgress: true,
           url: event.queryStringParameters.url,
           name: extractProjectName(event.queryStringParameters.url),
-        }).promise().then((data) => {
+        }).then((data) => {
           console.log(data);
-          return returnInProgress(callback);
+          return returnReady(callback);
         }).catch((error) => {
           console.error(error);
-          return returnInProgress(callback);
+          return returnReady(callback);
         });
       }).catch((error) => {
         console.error(error);
-        return returnInProgress(callback);
+        return returnReady(callback);
       });
 
-      return returnInProgress(callback);
+      return returnReady(callback);
     }
 
     return returnReady(callback);
   }).catch((error) => {
     console.error(error);
-    return returnInProgress(callback);
+    return returnReady(callback);
   });
 };

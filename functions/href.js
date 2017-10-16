@@ -7,15 +7,19 @@ const responses = require('./utils/responses');
 module.exports.run = (event, context, callback) => {
   DynamoDB.get({
     url: event.queryStringParameters.url,
-  }).then((data) => {
-    if (!data.Item) {
+  }).then((item) => {
+    if (!item) {
       return responses.redirect('https://s3.amazonaws.com/deploy-with-serverless/404.html', callback);
+    }
+
+    if (item.inProgress) {
+      return responses.redirect('https://s3.amazonaws.com/deploy-with-serverless/in-progress.html', callback);
     }
 
     const url = [
       'https://console.aws.amazon.com/cloudformation/home?region=us-east-1',
-      `#/stacks/new?stackName=${data.Item.name}`,
-      `&templateURL=https://s3.amazonaws.com/${data.Item.bucket}`,
+      `#/stacks/new?stackName=${item.name}`,
+      `&templateURL=https://s3.amazonaws.com/${item.bucket}`,
       '/cloudformation-template-update-stack.json'
     ].join('');
 
@@ -23,6 +27,6 @@ module.exports.run = (event, context, callback) => {
   }).catch((error) => {
     console.error(error);
 
-    return responses.dataCode(400, JSON.stringify({ message: 'project not found' }), callback);
+    return responses.redirect('https://s3.amazonaws.com/deploy-with-serverless/404.html', callback);
   });
 };
