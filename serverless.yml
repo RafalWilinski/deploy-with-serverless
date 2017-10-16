@@ -27,6 +27,7 @@ provider:
         - 'dynamodb:GetItem'
         - 'dynamodb:PutItem'
         - 'batch:SubmitJob'
+        - 'lambda:InvokeFunction'
       Resource: '*'
 
 functions:
