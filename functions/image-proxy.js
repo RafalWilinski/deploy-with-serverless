@@ -13,10 +13,14 @@ module.exports.run = (event, context, callback) => {
     },
   }).promise().then((data) => {
     if (!data.Item) {
+      // TODO: submit job to queue
+      // TODO: add job to db of projects in progress
+      // TODO: redirect to 404 or in progress depending on state
+      
       return callback(null, {
         statusCode: 301,
         headers: {
-          Location: 'https://s3.amazonaws.com/deploy-with-serverless/button-in-progress.svg'
+          Location: 'https://s3.amazonaws.com/deploy-with-serverless/button-in-progress.svg' //TODO: create button
         },
         body: '',
       });
