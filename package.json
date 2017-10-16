@@ -1,12 +1,13 @@
 {
   "name": "deploy-with-serverless",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Architecture behind Deploy with Serverless button",
   "main": "index.js",
   "scripts": {
     "deploy": "serverless deploy",
     "gen-passwd": "./scripts/gen-passwd.sh",
-    "deploy-img": "aws s3 cp ./assets/button.svg s3://deploy-with-serverless --acl public-read"
+    "deploy-img": "aws s3 cp ./assets/button.svg s3://deploy-with-serverless --acl public-read",
+    "deploy-static": "aws s3 cp ./static/404.html s3://deploy-with-serverless --acl public-read"
   },
   "author": "Rafal Wilinski <rwilinski.me>",
   "license": "MIT",

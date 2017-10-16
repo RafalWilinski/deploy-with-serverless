@@ -11,6 +11,16 @@ module.exports.run = (event, context, callback) => {
       url: event.queryStringParameters.url,
     },
   }).promise().then((data) => {
+    if (!data.Item) {
+      return callback(null, {
+        statusCode: 301,
+        headers: {
+          Location: 'https://s3.amazonaws.com/deploy-with-serverless/404.html',
+        },
+        body: ''
+      });
+    }
+
     const url = [
       'https://console.aws.amazon.com/cloudformation/home?region=us-east-1',
       `#/stacks/new?stackName=${data.Item.name}`,
