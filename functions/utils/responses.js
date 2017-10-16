@@ -11,6 +11,7 @@ const redirect = (Location, callback) => {
     body: '',
     headers: {
       Location,
+      'Cache-Control': 'max-age=60',
     },
   });
 }

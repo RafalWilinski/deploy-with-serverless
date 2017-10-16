@@ -13,26 +13,29 @@ module.exports.run = (event, context, callback) => {
 
   const url = event.queryStringParameters.url;
   const before = event.queryStringParameters.before;
-  const package = event.queryStringParameters.package;
+  const pkg = event.queryStringParameters.package;
   const after = event.queryStringParameters.after;
 
   DynamoDB.get({
-      url: event.queryStringParameters.url,
+      url,
   }).then((item) => {
+    console.log(item);
     if (!item) {
+      console.log('Project not found, submitting job...');
+
       Lambda.invoke({
         FunctionName: 'deploy-with-serverless-dev-handler',
         Payload: JSON.stringify({
           url,
           before,
-          package,
+          package: pkg,
           after,
         }),
       }).promise().then(() => {
         DynamoDB.put({
           inProgress: true,
-          url: event.queryStringParameters.url,
-          name: extractProjectName(event.queryStringParameters.url),
+          url,
+          name: extractProjectName(url),
         }).then((data) => {
           console.log(data);
           return returnReady(callback);
@@ -47,6 +50,8 @@ module.exports.run = (event, context, callback) => {
 
       return returnReady(callback);
     }
+
+    console.log('Project already built...');
 
     return returnReady(callback);
   }).catch((error) => {

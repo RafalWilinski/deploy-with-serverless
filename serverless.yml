@@ -163,7 +163,7 @@ resources:
     ServerlessBatchRepository:
       Type: AWS::ECR::Repository
       Properties:
-        RepositoryName: "serverless-batch-repository"
+        RepositoryName: "serverless-batch"
         RepositoryPolicyText: 
           Version: "2012-10-17"
           Statement: 

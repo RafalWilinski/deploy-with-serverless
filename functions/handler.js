@@ -9,16 +9,11 @@ const DynamoDB = require('./services/dynamodb');
 
 const Batch = new AWS.Batch();
 
-module.exports.run = (event, context, callback) => {
+module.exports.run = (json, context, callback) => {
   const timestamp = Math.round(+new Date() / 1000);
-  console.log(event);
-  const decoded = new Buffer(event, 'base64').toString('ascii');
-  console.log(decoded);
-  const json = JSON.parse(decoded);
-  console.log(json);
   const name = extractProjectName(json.url);
 
-  console.log(`URL: ${url}, Name: ${name}`);
+  console.log(`URL: ${json.url}, Name: ${name}`);
 
   Batch.submitJob({
     jobDefinition: `${process.env.JOB_DEFINITON_NAME}`,
@@ -28,7 +23,7 @@ module.exports.run = (event, context, callback) => {
       environment: [
         {
           name: "REPO_URL",
-          value: url
+          value: json.url
         },
         {
           name: "REPO_NAME",
