@@ -1,39 +1,47 @@
 "use strict";
 
 const AWS = require("aws-sdk");
-const DynamoDB = new AWS.DynamoDB.DocumentClient({ region: 'us-east-1' });
+const DynamoDB = require('./services/dynamodb');
+const response = require('./utils/responses');
+const extractProjectName = require('./utils/extractProjectName');
+const Lambda = new AWS.Lambda();
+
+const returnReady = (callback) => response.redirect('https://s3.amazonaws.com/deploy-with-serverless/button-ready.svg', callback);
+const returnInProgress = (callback) => response.redirect('https://s3.amazonaws.com/deploy-with-serverless/button-in-progress.svg', callback);
 
 module.exports.run = (event, context, callback) => {
   // TODO: Check if built project is up to date
 
   DynamoDB.get({
-    TableName: 'serverless-projects-table',
-    Key: {
       url: event.queryStringParameters.url,
-    },
-  }).promise().then((data) => {
-    if (!data.Item) {
-      // TODO: submit job to queue
-      // TODO: add job to db of projects in progress
-      // TODO: redirect to 404 or in progress depending on state
-      
-      return callback(null, {
-        statusCode: 301,
-        headers: {
-          Location: 'https://s3.amazonaws.com/deploy-with-serverless/button-in-progress.svg' //TODO: create button
-        },
-        body: '',
+  }).then((item) => {
+    if (!item) {
+      Lambda.invoke({
+        FunctionName: 'deploy-with-serverless-dev-handler',
+        Payload: event.queryStringParameters.url,
+      }).promise().then(() => {
+        DynamoDB.put({
+          inProgress: true,
+          url: event.queryStringParameters.url,
+          name: extractProjectName(event.queryStringParameters.url),
+        }).promise().then((data) => {
+          console.log(data);
+          return returnInProgress(callback);
+        }).catch((error) => {
+          console.error(error);
+          return returnInProgress(callback);
+        });
+      }).catch((error) => {
+        console.error(error);
+        return returnInProgress(callback);
       });
+
+      return returnInProgress(callback);
     }
 
-    return callback(null, {
-      statusCode: 301,
-      headers: {
-        Location: 'https://s3.amazonaws.com/deploy-with-serverless/button.svg'
-      },
-      body: '',
-    });
+    return returnReady(callback);
   }).catch((error) => {
-    console.log(error);
+    console.error(error);
+    return returnInProgress(callback);
   });
 };

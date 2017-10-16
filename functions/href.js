@@ -1,24 +1,15 @@
 "use strict";
 
-const AWS = require("aws-sdk");
-const DynamoDB = new AWS.DynamoDB.DocumentClient({ region: 'us-east-1' });
+const DynamoDB = require('./services/dynamodb');
+const responses = require('./utils/responses');
 
 // Redirects to latest CFN template
 module.exports.run = (event, context, callback) => {
   DynamoDB.get({
-    TableName: 'serverless-projects-table',
-    Key: {
-      url: event.queryStringParameters.url,
-    },
-  }).promise().then((data) => {
+    url: event.queryStringParameters.url,
+  }).then((data) => {
     if (!data.Item) {
-      return callback(null, {
-        statusCode: 301,
-        headers: {
-          Location: 'https://s3.amazonaws.com/deploy-with-serverless/404.html',
-        },
-        body: ''
-      });
+      return responses.redirect('https://s3.amazonaws.com/deploy-with-serverless/404.html', callback);
     }
 
     const url = [
@@ -28,21 +19,10 @@ module.exports.run = (event, context, callback) => {
       '/cloudformation-template-update-stack.json'
     ].join('');
 
-    return callback(null, {
-      statusCode: 301,
-      headers: {
-        Location: url,
-      },
-      body: ''
-    });
+    return responses.redirect(url, callback);
   }).catch((error) => {
     console.error(error);
 
-    callback(null, {
-      statusCode: 400,
-      body: JSON.stringify({
-        message: 'project not found'
-      }),
-    });
+    return responses.dataCode(400, JSON.stringify({ message: 'project not found' }), callback);
   });
 };

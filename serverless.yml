@@ -1,11 +1,11 @@
-service: aws-nodejs
+service: deploy-with-serverless
 
 plugins:
   - serverless-stack-output
 
 custom:
   queueName: serverless-projects-batch-queue
-  projectsTableName: serverless-projects-table
+  projectsTableName: serverless-projects
   jobDefinitionName: serverless-batch-job-definition
   keyPair: RafalWilinski-personal-ssh-key
 
@@ -25,17 +25,14 @@ provider:
     - Effect: 'Allow'
       Action:
         - 'dynamodb:GetItem'
+        - 'dynamodb:PutItem'
         - 'batch:SubmitJob'
       Resource: '*'
 
 functions:
   handler:
     handler: functions/handler.run
-    events:
-      - http:
-          path: /submit
-          method: POST
-          cors: true
+    memory: 128
   image-proxy:
     handler: functions/image-proxy.run
     memory: 128

@@ -37,9 +37,10 @@ aws s3 sync . s3://$DEPLOYMENT_BUCKET --exclude "*.zip" --acl public-read
 
 # Put dynamodb item
 aws dynamodb put-item \
-  --table-name serverless-projects-table  \
+  --table-name serverless-projects  \
   --item '{
     "url": {"S": "'"$REPO_URL"'"},
     "name": {"S": "'"$REPO_NAME"'"},
-    "bucket": {"S": "'"$DEPLOYMENT_BUCKET"'"}
+    "bucket": {"S": "'"$DEPLOYMENT_BUCKET"'"},
+    "inProgress": {"BOOL": false}
   }'

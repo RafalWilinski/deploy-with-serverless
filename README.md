@@ -5,7 +5,9 @@ Infrastructure for processing Serverless projects and creating one-click deploym
 ![Infra](assets/infra_v2.png?raw=true "Infrastructure Overview")
 
 ## Demo
-[![](https://kojv1kg009.execute-api.us-east-1.amazonaws.com/dev/image?url=http://github.com/RafalWilinski/serverless-medium-text-to-speech)](https://kojv1kg009.execute-api.us-east-1.amazonaws.com/dev/template?url=http://github.com/RafalWilinski/serverless-medium-text-to-speech&test=1)
+**Might be not working! WIP! 🙈**
+
+[![](https://kkcohgzei0.execute-api.us-east-1.amazonaws.com/dev/image?url=http://github.com/RafalWilinski/serverless-medium-text-to-speech)](https://kkcohgzei0.execute-api.us-east-1.amazonaws.com/dev/template?url=http://github.com/RafalWilinski/serverless-medium-text-to-speech&test=1)
 
 
 *Clicking button above will start deploy procedure of [serverless-medium-text-to-speech](https://github.com/RafalWilinski/serverless-medium-text-to-speech) project on your AWS Account via CloudFormation*
@@ -16,7 +18,7 @@ Goal of the project is to create a mechanism for 1-click deployments, similar to
 ## Adding to your own project
 In `README.md`, add following button/image:
 ```
-[![](https://kojv1kg009.execute-api.us-east-1.amazonaws.com/dev/image?url=<YOUR_PROJECT_GITHUB_URL>)](https://kojv1kg009.execute-api.us-east-1.amazonaws.com/dev/template?url=<YOUR_PROJECT_GITHUB_URL>)
+[![](https://kkcohgzei0.execute-api.us-east-1.amazonaws.com/dev/image?url=<YOUR_PROJECT_GITHUB_URL>)](https://kkcohgzei0.execute-api.us-east-1.amazonaws.com/dev/template?url=<YOUR_PROJECT_GITHUB_URL>)
 ```
 
 All the magic like building project, uploading artifacts or creating CloudFormation template is handled automatically!
@@ -40,4 +42,6 @@ npm install
  - `npm run gen-passwd` - generates a random password for user which interacts with ECS
  - `npm run deploy-img` - deploys image asset to public bucket
  - `npm run deploy-static` - deploys 404 page
+ - `npm run deploy-assets` - deploys both imgs and static pages
+ 
 
