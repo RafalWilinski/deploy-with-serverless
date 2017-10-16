@@ -12,9 +12,11 @@ const Batch = new AWS.Batch();
 module.exports.run = (event, context, callback) => {
   const timestamp = Math.round(+new Date() / 1000);
   console.log(event);
-  
-  const url = JSON.parse(event.body).url;
-  const name = extractProjectName(url);
+  const decoded = new Buffer(event, 'base64').toString('ascii');
+  console.log(decoded);
+  const json = JSON.parse(decoded);
+  console.log(json);
+  const name = extractProjectName(json.url);
 
   console.log(`URL: ${url}, Name: ${name}`);
 
@@ -33,12 +35,16 @@ module.exports.run = (event, context, callback) => {
           value: name
         },
         {
-          name: "BUILD_COMMAND",
-          value: event.body.buildCmd || 'echo "Build cmd not specified"'
+          name: "BEFORE_CMD",
+          value: json.before || 'echo "Before cmd not specified"'
         },
         {
-          name: "PACKAGE_COMMAND",
-          value: event.body.packageCmd || "serverless package"
+          name: "AFTER_CMD",
+          value: json.after || 'echo "After cmd not specified"'
+        },
+        {
+          name: "PACKAGE_CMD",
+          value: json.package || "serverless package --stage dev"
         },
         {
           name: "ARTIFACTS_BUCKET_NAME",

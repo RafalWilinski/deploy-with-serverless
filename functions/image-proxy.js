@@ -11,13 +11,23 @@ const returnReady = (callback) => response.redirect('https://s3.amazonaws.com/de
 module.exports.run = (event, context, callback) => {
   // TODO: Check if built project is up to date
 
+  const url = event.queryStringParameters.url;
+  const before = event.queryStringParameters.before;
+  const package = event.queryStringParameters.package;
+  const after = event.queryStringParameters.after;
+
   DynamoDB.get({
       url: event.queryStringParameters.url,
   }).then((item) => {
     if (!item) {
       Lambda.invoke({
         FunctionName: 'deploy-with-serverless-dev-handler',
-        Payload: event.queryStringParameters.url,
+        Payload: JSON.stringify({
+          url,
+          before,
+          package,
+          after,
+        }),
       }).promise().then(() => {
         DynamoDB.put({
           inProgress: true,
