@@ -23,6 +23,20 @@ In `README.md`, add following button/image:
 
 All the magic like building project, uploading artifacts or creating CloudFormation template is handled automatically!
 
+You can add following params to URL in order to change build procedure:
+- `before_package` - command invoked before `serverless package --stage dev`, by default it's `null`
+- `package` - by default `serverless package --stage dev`
+- `after_package` - command invoked after `serverless package --stage dev`, by default it's `null`
+
+E.g.:
+```url
+https://kkcohgzei0.execute-api.us-east-1.amazonaws.com/dev/image
+?url=http://github.com/RafalWilinski/serverless-medium-text-to-speech
+&before_package=npm%20run%20build
+&package=serverless%20package%20--stage%20prod
+&after_package=rm%20-fr%20node_modules
+```
+
 ## Development
 ### Prerequisites
  - Node
