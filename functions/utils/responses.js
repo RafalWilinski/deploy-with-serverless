@@ -7,7 +7,7 @@ const dataCode = (statusCode, body, callback) => {
 
 const redirect = (Location, callback) => {
   return callback(null, {
-    statusCode: 301,
+    statusCode: 307,
     body: "",
     headers: {
       Location,
