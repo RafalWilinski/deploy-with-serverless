@@ -3,9 +3,9 @@
 const AWS = require("aws-sdk");
 const fs = require("fs");
 const path = require("path");
-const extractProjectName = require('./utils/extractProjectName');
-const response = require('./utils/responses');
-const DynamoDB = require('./services/dynamodb');
+const extractProjectName = require("./utils/extractProjectName");
+const response = require("./utils/responses");
+const DynamoDB = require("./services/dynamodb");
 
 const Batch = new AWS.Batch();
 
@@ -59,7 +59,11 @@ module.exports.run = (json, context, callback) => {
     .promise()
     .then(data => {
       console.log(data);
-      return response.dataCode(200, JSON.stringify({ message: 'OK' }), callback);
+      return response.dataCode(
+        200,
+        JSON.stringify({ message: "OK" }),
+        callback
+      );
     })
     .catch(error => {
       console.error(error);

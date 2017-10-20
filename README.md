@@ -7,7 +7,7 @@ Infrastructure for processing Serverless projects and creating one-click deploym
 ## Demo
 **Might be not working! WIP! 🙈**
 
-[![](https://kkcohgzei0.execute-api.us-east-1.amazonaws.com/dev/image?url=http://github.com/RafalWilinski/serverless-medium-text-to-speech)](https://kkcohgzei0.execute-api.us-east-1.amazonaws.com/dev/template?url=http://github.com/RafalWilinski/serverless-medium-text-to-speech&test=1)
+[![](https://kkcohgzei0.execute-api.us-east-1.amazonaws.com/dev/image?url=https://github.com/RafalWilinski/serverless-medium-text-to-speech)](https://kkcohgzei0.execute-api.us-east-1.amazonaws.com/dev/template?url=http://github.com/RafalWilinski/serverless-medium-text-to-speech)
 
 
 *Clicking button above will start deploy procedure of [serverless-medium-text-to-speech](https://github.com/RafalWilinski/serverless-medium-text-to-speech) project on your AWS Account via CloudFormation*

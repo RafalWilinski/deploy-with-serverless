@@ -1,32 +1,43 @@
 "use strict";
 
-const DynamoDB = require('./services/dynamodb');
-const responses = require('./utils/responses');
+const DynamoDB = require("./services/dynamodb");
+const responses = require("./utils/responses");
 
 // Redirects to latest CFN template
 module.exports.run = (event, context, callback) => {
   DynamoDB.get({
-    url: event.queryStringParameters.url,
-  }).then((item) => {
-    if (!item) {
-      return responses.redirect('https://s3.amazonaws.com/deploy-with-serverless/404.html', callback);
-    }
+    url: event.queryStringParameters.url
+  })
+    .then(item => {
+      if (!item) {
+        return responses.redirect(
+          "https://s3.amazonaws.com/deploy-with-serverless/404.html",
+          callback
+        );
+      }
 
-    if (item.inProgress) {
-      return responses.redirect('https://s3.amazonaws.com/deploy-with-serverless/in-progress.html', callback);
-    }
+      if (item.inProgress) {
+        return responses.redirect(
+          "https://s3.amazonaws.com/deploy-with-serverless/in-progress.html",
+          callback
+        );
+      }
 
-    const url = [
-      'https://console.aws.amazon.com/cloudformation/home?region=us-east-1',
-      `#/stacks/new?stackName=${item.name}`,
-      `&templateURL=https://s3.amazonaws.com/${item.bucket}`,
-      '/cloudformation-template-update-stack.json'
-    ].join('');
+      const url = [
+        "https://console.aws.amazon.com/cloudformation/home?region=us-east-1",
+        `#/stacks/new?stackName=${item.name}`,
+        `&templateURL=https://s3.amazonaws.com/${item.bucket}`,
+        "/cloudformation-template-update-stack.json"
+      ].join("");
 
-    return responses.redirect(url, callback);
-  }).catch((error) => {
-    console.error(error);
+      return responses.redirect(url, callback);
+    })
+    .catch(error => {
+      console.error(error);
 
-    return responses.redirect('https://s3.amazonaws.com/deploy-with-serverless/404.html', callback);
-  });
+      return responses.redirect(
+        "https://s3.amazonaws.com/deploy-with-serverless/404.html",
+        callback
+      );
+    });
 };

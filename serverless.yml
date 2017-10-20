@@ -277,6 +277,7 @@ resources:
                     - ecs:RunTask
                     - ecs:StartTask
                     - ecs:StopTask
+                    - ecs:Poll
                     - ecs:UpdateContainerAgent
                     - ecs:DeregisterContainerInstance
                     - logs:CreateLogGroup
@@ -285,6 +286,7 @@ resources:
                     - logs:DescribeLogGroups
                     - iam:GetInstanceProfile
                     - iam:PassRole
+                    - ecr:*
 
     # AWS Batch
     ServerlessBatchComputeEnvironment:

@@ -8,18 +8,16 @@ const dataCode = (statusCode, body, callback) => {
 const redirect = (Location, callback) => {
   return callback(null, {
     statusCode: 301,
-    body: '',
+    body: "",
     headers: {
       Location,
-      'Cache-Control': 'max-age=60',
-    },
+      "Cache-Control": "max-age=60",
+      ETag: String(Math.random() * 1000000)
+    }
   });
-}
+};
 
 module.exports = {
   dataCode,
   redirect
 };
-
-
-
