@@ -3,6 +3,12 @@
 const DynamoDB = require("./services/dynamodb");
 const responses = require("./utils/responses");
 
+const return404 = callback =>
+  responses.redirect(
+    "https://s3.amazonaws.com/deploy-with-serverless/404.html",
+    callback
+  );
+
 // Redirects to latest CFN template
 module.exports.run = (event, context, callback) => {
   DynamoDB.get({
@@ -10,10 +16,7 @@ module.exports.run = (event, context, callback) => {
   })
     .then(item => {
       if (!item) {
-        return responses.redirect(
-          "https://s3.amazonaws.com/deploy-with-serverless/404.html",
-          callback
-        );
+        return return404(callback);
       }
 
       if (item.inProgress) {
@@ -34,10 +37,6 @@ module.exports.run = (event, context, callback) => {
     })
     .catch(error => {
       console.error(error);
-
-      return responses.redirect(
-        "https://s3.amazonaws.com/deploy-with-serverless/404.html",
-        callback
-      );
+      return return404(callback);
     });
 };
