@@ -28,7 +28,7 @@ provider:
         - 'dynamodb:PutItem'
         - 'batch:SubmitJob'
         - 'lambda:InvokeFunction'
-        - 's3:CreateBucket'
+        - 's3:*'
       Resource: '*'
 
 functions:
@@ -262,25 +262,7 @@ resources:
                     - autoscaling:SuspendProcesses
                     - autoscaling:PutNotificationConfiguration
                     - autoscaling:TerminateInstanceInAutoScalingGroup
-                    - ecs:DescribeClusters
-                    - ecs:DescribeContainerInstances
-                    - ecs:DescribeTaskDefinition
-                    - ecs:DescribeTasks
-                    - ecs:ListClusters
-                    - ecs:ListContainerInstances
-                    - ecs:ListTaskDefinitionFamilies
-                    - ecs:ListTaskDefinitions
-                    - ecs:ListTasks
-                    - ecs:CreateCluster
-                    - ecs:DeleteCluster
-                    - ecs:RegisterTaskDefinition
-                    - ecs:DeregisterTaskDefinition
-                    - ecs:RunTask
-                    - ecs:StartTask
-                    - ecs:StopTask
-                    - ecs:Poll
-                    - ecs:UpdateContainerAgent
-                    - ecs:DeregisterContainerInstance
+                    - ecs:*
                     - logs:CreateLogGroup
                     - logs:CreateLogStream
                     - logs:PutLogEvents
@@ -288,6 +270,8 @@ resources:
                     - iam:GetInstanceProfile
                     - iam:PassRole
                     - ecr:*
+                    - dynamodb:PutItem
+                    - dynamodb:DescribeTable
 
     # AWS Batch
     ServerlessBatchComputeEnvironment:
@@ -330,7 +314,7 @@ resources:
         Type: container
         JobDefinitionName: ${self:custom.jobDefinitionName}
         ContainerProperties:
-          Memory: 512
+          Memory: 1024
           Privileged: true
           Vcpus: 1
           Image: 

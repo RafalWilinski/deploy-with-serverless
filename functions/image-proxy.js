@@ -38,32 +38,35 @@ module.exports.run = (event, context, callback) => {
 
         console.log(bucket);
 
-        createBucket(bucket).then(() => {
-          Lambda.invoke({
-            FunctionName: "deploy-with-serverless-dev-handler",
-            Payload: JSON.stringify({
-              url,
-              before,
-              package: pkg,
-              after,
-              bucket
-            })
-          })
-            .promise()
-            .then(() => {
-              DynamoDB.put({
-                inProgress: true,
+        createBucket(bucket)
+          .then(() => {
+            return Lambda.invoke({
+              FunctionName: "deploy-with-serverless-dev-handler",
+              Payload: JSON.stringify({
                 url,
-                name: extractProjectName(url),
+                before,
+                package: pkg,
+                after,
                 bucket
-              }).then(data => {
-                console.log(data);
-                return returnReady(callback);
+              })
+            })
+              .promise()
+              .then(() => {
+                DynamoDB.put({
+                  inProgress: true,
+                  url,
+                  name: extractProjectName(url),
+                  bucket
+                }).then(data => {
+                  console.log(data);
+                  return returnReady(callback);
+                });
               });
-            });
-
-          return returnReady(callback);
-        });
+          })
+          .catch(error => {
+            console.error(error);
+            return returnReady(callback);
+          });
       }
 
       console.log("Project already built...");

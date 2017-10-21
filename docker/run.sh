@@ -8,7 +8,7 @@ aws configure set region us-east-1
 
 # Clone repository and change directory
 git clone $REPO_URL src
-cd workdir
+cd src
 
 # Install dependencies
 echo 'Installing dependencies...'
@@ -27,6 +27,8 @@ eval $AFTER_CMD
 
 # Go to artifacts & compiled Cloudformation template path
 cd .serverless
+
+pwd
 
 # Upload CFN Template
 echo 'Uploading CFN template...'
