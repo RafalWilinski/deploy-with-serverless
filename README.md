@@ -5,8 +5,6 @@ Infrastructure for processing Serverless projects and creating one-click deploym
 ![Infra](assets/infra_v2.png?raw=true "Infrastructure Overview")
 
 ## Demo
-**Might be not working! WIP! 🙈**
-
 [![](https://v26mdkczs6.execute-api.us-east-1.amazonaws.com/dev/image?url=https://github.com/RafalWilinski/serverless-medium-text-to-speech)](https://v26mdkczs6.execute-api.us-east-1.amazonaws.com/dev/template?url=http://github.com/RafalWilinski/serverless-medium-text-to-speech)
 
 
