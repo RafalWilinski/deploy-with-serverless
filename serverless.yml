@@ -28,6 +28,7 @@ provider:
         - 'dynamodb:PutItem'
         - 'batch:SubmitJob'
         - 'lambda:InvokeFunction'
+        - 's3:CreateBucket'
       Resource: '*'
 
 functions:
@@ -332,7 +333,11 @@ resources:
           Memory: 512
           Privileged: true
           Vcpus: 1
-          Image: 'serverless-batch:latest'
+          Image: 
+            Fn::Join:
+              - ""
+              - - Ref: AWS::AccountId
+                - '.dkr.ecr.us-east-1.amazonaws.com/serverless-batch:latest'
         RetryStrategy:
           Attempts: 1
   Outputs:

@@ -6,14 +6,9 @@ timestamp() {
 
 aws configure set region us-east-1
 
-# Create public S3 Bucket
-DEPLOYMENT_BUCKET=com.deploy-with-sls.$REPO_NAME.$(timestamp)
-echo Creating $DEPLOYMENT_BUCKET bucket...
-aws s3api create-bucket --bucket $DEPLOYMENT_BUCKET --acl public-read
-
 # Clone repository and change directory
-git clone $REPO_URL
-cd $REPO_NAME
+git clone $REPO_URL src
+cd workdir
 
 # Install dependencies
 echo 'Installing dependencies...'
@@ -23,7 +18,7 @@ npm install
 eval $BEFORE_CMD
 
 # Change SLS bucket
-python ../change-deployment-bucket.py $DEPLOYMENT_BUCKET
+python ../change-deployment-bucket.py $BUCKET
 
 # Run `serverless package --stage dev`, this might be overriden
 eval $PACKAGE_CMD
@@ -35,7 +30,7 @@ cd .serverless
 
 # Upload CFN Template
 echo 'Uploading CFN template...'
-aws s3 sync . s3://$DEPLOYMENT_BUCKET --exclude "*.zip" --acl public-read
+aws s3 sync . s3://$BUCKET --exclude "*.zip" --acl public-read
 
 # Put dynamodb item
 aws dynamodb put-item \
@@ -43,6 +38,6 @@ aws dynamodb put-item \
   --item '{
     "url": {"S": "'"$REPO_URL"'"},
     "name": {"S": "'"$REPO_NAME"'"},
-    "bucket": {"S": "'"$DEPLOYMENT_BUCKET"'"},
+    "bucket": {"S": "'"$BUCKET"'"},
     "inProgress": {"BOOL": false}
   }'

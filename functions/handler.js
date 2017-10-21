@@ -42,16 +42,8 @@ module.exports.run = (json, context, callback) => {
           value: json.package || "serverless package --stage dev"
         },
         {
-          name: "ARTIFACTS_BUCKET_NAME",
-          value: `${name}-artifacts-${timestamp}`
-        },
-        {
-          name: "TEMPLATE_BUCKET_NAME",
-          value: `${name}-template-${timestamp}`
-        },
-        {
-          name: "TIMESTAMP",
-          value: String(timestamp)
+          name: "BUCKET",
+          value: json.bucket
         }
       ]
     }

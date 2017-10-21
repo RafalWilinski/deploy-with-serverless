@@ -4,7 +4,7 @@
 */
 const extractProjectName = url => {
   const arr = url.split("/");
-  return `${arr[3]}-${arr[4]}`;
+  return `${arr[4]}`;
 };
 
 module.exports = extractProjectName;

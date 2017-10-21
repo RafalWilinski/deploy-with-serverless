@@ -4,7 +4,7 @@ SECRET_KEY=$2
 AWS_ACCOUNT_ID=$3
 REGION=$4
 
-NAME=serverless-batch-repository:latest
+NAME=serverless-batch:latest
 
 aws configure set profile.serverless-batch.aws_access_key_id $ACCESS_KEY
 aws configure set profile.serverless-batch.aws_secret_access_key $SECRET_KEY
