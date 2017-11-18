@@ -15,15 +15,16 @@ echo 'Installing dependencies...'
 npm install
 
 # Apply optional build commands like babel or webpack
-eval $BEFORE_CMD
+# eval $BEFORE_CMD
 
 # Change SLS bucket
 python ../change-deployment-bucket.py $BUCKET
 
 # Run `serverless package --stage dev`, this might be overriden
-eval $PACKAGE_CMD
+# eval $PACKAGE_CMD
+serverless package --stage dev
 
-eval $AFTER_CMD
+# eval $AFTER_CMD
 
 # Go to artifacts & compiled Cloudformation template path
 cd .serverless
